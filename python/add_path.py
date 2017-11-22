@@ -3,7 +3,8 @@
 
 p=$(echo "import os, sys;  print(os.path.abspath(sys.argv[0]))" | python)
 
-# this doesn't work!!!
-eval $(export PATH=$PATH:$p)
+# these doesn't work!!!
+export PATH=$PATH:$p
+eval "PATH=$PATH:$p"
 
 
