@@ -38,15 +38,15 @@ ccom-clone() {
 
 # aws shell mfa stuff.
 # this should go into aws-shelltools
-EXPORT=$HOME/.aws/config.d/exported_env
 aws-export() {
-    env | grep --color=auto ^AWS | sort > $EXPORT
-    perl -pi -e "s/^(.*)$/export \1/g" $EXPORT
-    chmod 600 $EXPORT
+    EXPORT_FILE=$HOME/.aws/config.d/exported_env
+    env | grep --color=auto ^AWS | sort > $EXPORT_FILE
+    perl -pi -e "s/^(.*)$/export \1/g" $EXPORT_FILE
+    chmod 600 $EXPORT_FILE
 }
 
 aws-import() {
-   list=$(grep -v EXPIRATION $EXPORT)
-   echo $list
-   eval $list
-
+    EXPORT_FILE=$HOME/.aws/config.d/exported_env
+    list=$(grep -v EXPIRATION $EXPORT_FILE)
+    eval $list
+}
