@@ -35,3 +35,18 @@ ccom-clone() {
     git clone $repo
 }
     
+
+# aws shell mfa stuff.
+# this should go into aws-shelltools
+EXPORT=$HOME/.aws/config.d/exported_env
+aws-export() {
+    env | grep --color=auto ^AWS | sort > $EXPORT
+    perl -pi -e "s/^(.*)$/export \1/g" $EXPORT
+    chmod 600 $EXPORT
+}
+
+aws-import() {
+   list=$(grep -v EXPIRATION $EXPORT)
+   echo $list
+   eval $list
+
