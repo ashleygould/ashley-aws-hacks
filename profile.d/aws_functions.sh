@@ -1,5 +1,52 @@
 #!/bin/bash
 
+# iam
+
+iam-listusers() {
+    aws iam list-users | grep UserName
+}
+
+iam-listgroups() {
+    aws iam list-groups | grep GroupName
+}
+
+iam-getuser() {
+    aws iam get-user --user-name $1
+    aws iam list-groups-for-user --user-name $1 | grep GroupName
+}
+
+iam-getgroup() {
+    aws iam get-group --group-name $1 | grep -A 5 '"Group": {'
+    aws iam get-group --group-name $1 | grep UserName
+}
+
+iam-useradd() {
+    aws iam create-user --user-name $1
+}
+
+iam-userdel() {
+    aws iam delete-user --user-name $1
+}
+
+iam-groupadd() {
+    aws iam create-group --group-name $1
+}
+
+iam-groupdel() {
+    aws iam delete-group --group-name $1
+}
+
+iam-groupmod-adduser() {
+    aws iam add-user-to-group --group-name $1 --user-name $2
+}
+
+iam-groupmod-rmuser() {
+    aws iam remove-user-from-group --group-name $1 --user-name $2
+}
+
+
+
+
 # cloudformation
 cfn-delete() {
    aws cloudformation delete-stack --stack-name $1
