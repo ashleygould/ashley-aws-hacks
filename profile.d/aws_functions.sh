@@ -99,6 +99,27 @@ s3ls() {
     fi
 }
 
+s3mb() {
+    aws s3 mb s3://$1
+}
+
+s3rb() {
+    aws s3 rb s3://$1
+}
+
+s3put() {
+    object=$1
+    bucket=$2
+    aws s3 cp $object s3://${bucket}/${object}
+}
+
+s3get() {
+    object=$1
+    bucket=$2
+    aws s3 cp s3://${bucket}/${object} $object
+}
+
+
 s3sync() {
     bucket=$1
     target=$2
