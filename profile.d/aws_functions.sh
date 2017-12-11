@@ -107,6 +107,11 @@ s3rb() {
     aws s3 rb s3://$1
 }
 
+s3rrb() {
+    aws s3 rm s3://$1 --recursive
+    aws s3 rb s3://$1
+}
+
 s3put() {
     object=$1
     bucket=$2
