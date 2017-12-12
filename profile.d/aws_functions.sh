@@ -62,6 +62,7 @@ cfn-list() {
 
 cfn-stack() {
     aws cloudformation describe-stacks --stack-name $1
+    aws cloudformation describe-stack-resources --stack-name $1
 }
 
 cfn-template() {
