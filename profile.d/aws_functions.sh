@@ -90,6 +90,29 @@ ccom-clone() {
 }
 
 
+
+# ecr
+
+ecr-list-repos() {
+    aws ecr describe-repositories
+}
+
+ecr-create-repo() {
+    aws ecr create-repository --repository-name $1
+}
+
+ecr-list-images() {
+    aws ecr describe-images --repository-name $1
+}
+
+ecr-login() {
+     eval $(aws ecr get-login --no-include-email)
+}
+
+
+
+
+
 # s3
 s3ls() {
     bucket=$1
