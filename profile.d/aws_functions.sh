@@ -1,5 +1,11 @@
 #!/bin/bash
 
+aws-region() {
+    export AWS_DEFAULT_REGION=$1
+}
+
+
+
 # iam
 
 iam-listusers() {
@@ -91,27 +97,6 @@ ccom-clone() {
 
 
 
-# ecr
-
-ecr-list-repos() {
-    aws ecr describe-repositories
-}
-
-ecr-create-repo() {
-    aws ecr create-repository --repository-name $1
-}
-
-ecr-list-images() {
-    aws ecr describe-images --repository-name $1
-}
-
-ecr-login() {
-     eval $(aws ecr get-login --no-include-email)
-}
-
-
-
-
 
 # s3
 s3ls() {
@@ -159,4 +144,58 @@ s3sync() {
     fi
 }
 
+
+
+
+# ecr
+
+ecr-repos() {
+    region=$1
+    if [ -n "$region" ]; then
+        aws ecr describe-repositories --region $region
+    else
+        aws ecr describe-repositories
+    fi
+}
+
+ecr-create-repo() {
+    repo=$1
+    region=$2
+    if [ -n "$region" ]; then
+        aws ecr create-repository --repository-name $repo --region $region
+    else
+        aws ecr create-repository --repository-name $repo
+    fi
+}
+
+ecr-delete-repo() {
+    repo=$1
+    tag=$2
+    region=$3
+    if [ -n "$region" ]; then
+        aws ecr batch-delete-image --repository-name $repo --region $region --image-ids imageTag=${tag}
+    else
+        aws ecr batch-delete-image --repository-name $repo --image-ids imageTag=${tag}
+    fi
+
+    if [ -n "$region" ]; then
+        aws ecr delete-repository --repository-name $repo --region $region
+    else
+        aws ecr delete-repository --repository-name $repo
+    fi
+}
+
+ecr-images() {
+    repo=$1
+    region=$2
+    if [ -n "$region" ]; then
+        aws ecr describe-images --repository-name $repo --region $region
+    else
+        aws ecr describe-images --repository-name $repo
+    fi
+}
+
+ecr-login() {
+     eval $(aws ecr get-login --no-include-email)
+}
 
