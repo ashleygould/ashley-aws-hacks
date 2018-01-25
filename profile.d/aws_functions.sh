@@ -1,7 +1,12 @@
 #!/bin/bash
 
 aws-region() {
-    export AWS_DEFAULT_REGION=$1
+    region=$1
+    if [ -n "$region" ]; then
+    	export AWS_DEFAULT_REGION=$1
+    else
+	echo $AWS_DEFAULT_REGION
+    fi
 }
 
 
@@ -198,4 +203,7 @@ ecr-images() {
 ecr-login() {
      eval $(aws ecr get-login --no-include-email)
 }
+
+# docker tag 035819119057.dkr.ecr.us-west-2.amazonaws.com/ucop_simplesamlphp:latest 071826132890.dkr.ecr.us-west-2.amazonaws.com/simplesamlphp:latest
+# docker push 071826132890.dkr.ecr.us-west-2.amazonaws.com/simplesamlphp:latest
 
