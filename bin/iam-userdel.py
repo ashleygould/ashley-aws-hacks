@@ -2,6 +2,8 @@
 """Delete IAM user.  Remove from all groups, drop access keys, login profile, mfa, other"""
 import sys
 import boto3
+from botocore.exceptions import ClientError
+
 
 if len(sys.argv) < 2:
     print('provide a user name')
@@ -18,7 +20,7 @@ for x in user.access_keys.all():
     x.delete()
 for x in user.attached_policies.all():
     print('detaching policy {}'.format(x.policy_name))
-    x.detach_user()
+    x.detach_user(UserName=user.name)
 for x in user.groups.all():
     print('removing user from group {}'.format(x.name))
     x.remove_user(UserName=user.name)
@@ -36,14 +38,30 @@ for x in user.signing_certificates.all():
 profile = user.LoginProfile()
 try:
     profile.load()
-    print('deleting login profile {}'.format(profile))
-except Exception as e:
+    print('deleting login profile for user {}'.format(profile.user_name))
+    profile.delete()
+except profile.meta.client.exceptions.NoSuchEntityException as e:
     pass
+
 print('deleting user {}'.format(user.name))
 user.delete()
 
+
+
 """
-bug:
+BUG:
+
+all other resources tied to user are deleted.
+I cant figure out what the "referenced objects" might be.
+
+only occurs for some users:  
+account ucop-its:
+    ashley
+    gonzalo
+    colin
+account syseng-poc:
+    eodell
+    eric
 
 (python3.6) agould@horus:~/git-repos/code-commit/ashley-training/ashley-aws-hacks/bin> ./iam-userdel.py ashley
 deleting user ashley
