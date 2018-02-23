@@ -207,3 +207,26 @@ ecr-login() {
 # docker tag 035819119057.dkr.ecr.us-west-2.amazonaws.com/ucop_simplesamlphp:latest 071826132890.dkr.ecr.us-west-2.amazonaws.com/simplesamlphp:latest
 # docker push 071826132890.dkr.ecr.us-west-2.amazonaws.com/simplesamlphp:latest
 
+
+
+# Lambda
+lambda-list() {
+    aws lambda list-functions | grep FunctionName
+}
+
+
+lambda-func() {
+    aws lambda get-function --function-name $1
+}
+
+
+lambda-update() {
+    bucket=$1
+    key=$2
+    name=$3
+    aws lambda update-function-code --s3-bucket $bucket --s3-key $key --function-name $name
+}
+
+
+
+
