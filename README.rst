@@ -1,15 +1,11 @@
-Setup::
 
-  cp bin/* ~/bin/
-  [ -d ~/.profile.d ] || mkdir ~/.profile.d
-  cp profile.d/* ~/.profile.d/
-
-  echo << EOF >> ~/.bashrc
-  # ashley's aws hacks
-  [ -f ~/.profile.d/aws_functions.sh ] && source ~/.profile.d/aws_functions.sh
-  EOF
-
+Initial shell setup::
+  cd ashley-aws-hacks
+  ./shell_setup.sh
   . ~/.bashrc
 
-
+Updating new hacks::
+  cd ashley-aws-hacks
+  ./update_hacks.sh
+  . ~/.bashrc
 

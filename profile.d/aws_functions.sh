@@ -56,6 +56,20 @@ iam-groupmod-rmuser() {
 }
 
 
+# IAM roles
+iam-lr() {
+    aws iam list-roles | grep RoleName
+}
+
+iam-role() {
+    aws iam get-role --role-name $1
+    aws iam list-role-policies --role-name $1
+}
+
+iam-role-policy() {
+    aws iam get-role-policy --role-name $1 --policy-name $2
+}
+
 
 
 # cloudformation
