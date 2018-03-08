@@ -1,3 +1,8 @@
+Ashley's AWS Hacks
+==================
+
+
+A collection of simple scripts and shell functions for common awscli actions.
 
 Initial shell setup::
   cd ashley-aws-hacks
