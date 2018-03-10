@@ -1,0 +1,71 @@
+#########################
+# The Basics
+
+
+# configure codecommit access
+git config --global credential.helper '!aws codecommit credential-helper $@'
+git config --global credential.UseHttpPath true
+
+# make python3 the default
+unalias python
+sudo alternatives --set python /usr/bin/python3.6
+
+# install boto3
+sudo pip install boto3
+
+# set up git/awscli auto completion
+echo "source /etc/bash_completion.d/git" >> ~/.bashrc
+echo "source /etc/bash_completion.d/aws_bash_completer" >> ~/.bashrc
+
+# fix python alias and git default editor
+perl -pi -e 's/python27/python36/g' ~/.bashrc
+perl -pi -e 's/nano/vim/g' ~/.bashrc
+
+
+
+######################
+# Install my tools set
+
+
+# ashley-aws-hacks
+#
+cd ~/environment/
+git clone https://github.com/ashleygould/ashley-aws-hacks
+cd ashley-aws-hacks/
+./shell_setup.sh 
+. ~/.bashrc
+
+
+
+# aws-orgs
+#
+cd ~/environment/
+git clone https://github.com/ashleygould/aws-orgs
+pip install --user -e aws-orgs/
+awsaccounts report
+
+# install config files for aws-orgs from codecommit:
+aws codecommit list-repositories --region us-west-2
+aws codecommit get-repository --repository-name awsorgs_spec_files --region us-west-2
+git clone https://git-codecommit.us-west-2.amazonaws.com/v1/repos/awsorgs_spec_files
+cd awsorgs_spec_files/
+
+
+
+# aws-shelltools
+#
+git clone https://github.com/ashleygould/aws-shelltools
+sudo pip install -U awscli
+pip install --user -e aws-shelltools/
+aws-shelltools-setup 
+. ~/.bashrc
+
+# set my own credentials as [default].  this brakes auto credentials in
+# cloud9, which brakes sharing:
+cd ~/.aws
+vi credentials
+aws-profile default
+aws-make-config 
+aws-set-mfa-token 
+aws-assume-role OrgMaster
+aws-whoami 

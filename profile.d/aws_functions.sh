@@ -110,7 +110,7 @@ ccom-delete() {
 }
 
 ccom-clone() {
-    repo=$(cc-geturl.py $1)
+    repo=$(ccom-geturl.py $1)
     git clone $repo
 }
 
@@ -129,6 +129,10 @@ s3ls() {
 
 s3mb() {
     aws s3 mb s3://$1
+}
+
+s3empty() {
+    aws s3 rm s3://$1 --recursive
 }
 
 s3rb() {
