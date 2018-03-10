@@ -118,14 +118,16 @@ ccom-clone() {
 
 
 # s3
+#
 s3ls() {
     bucket=$1
     if [ -n "$bucket" ]; then
         aws s3 ls s3://${bucket}/
     else
-        aws s3 ls
+        aws s3 ls | awk '{print $3}'
     fi
 }
+# for bucket in $(s3ls); do s3show.py $bucket; echo;echo; done | tee /tmp/bucket_inventory
 
 s3mb() {
     aws s3 mb s3://$1
@@ -156,15 +158,16 @@ s3get() {
     aws s3 cp s3://${bucket}/${object} $object
 }
 
+s3syncto() {
+    source=$1
+    bucket=$2
+    aws s3 sync $source/ s3://${bucket}/
+}
 
-s3sync() {
+s3syncfrom() {
     bucket=$1
     target=$2
-    if [ -n "$target" ]; then
-        aws s3 sync s3://${bucket}/ $target/
-    else
-        aws s3 sync s3://${bucket}/ .
-    fi
+    aws s3 sync s3://${bucket}/ $target/
 }
 
 
