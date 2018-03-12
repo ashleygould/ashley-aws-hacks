@@ -133,10 +133,6 @@ s3mb() {
     aws s3 mb s3://$1
 }
 
-s3empty() {
-    aws s3 rm s3://$1 --recursive
-}
-
 s3rb() {
     aws s3 rb s3://$1
 }
