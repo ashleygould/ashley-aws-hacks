@@ -97,20 +97,20 @@ cfn-template() {
 
 
 # codecommit
-ccom-list() {
+cocolist() {
     aws codecommit list-repositories
 }
 
-ccom-create() {
+cococreate() {
     aws codecommit create-repository --repository-name $1
 }
 
-ccom-delete() {
+cocodelete() {
     aws codecommit delete-repository --repository-name $1
 }
 
-ccom-clone() {
-    repo=$(ccom-geturl.py $1)
+cococlone() {
+    repo=$(cocogeturl.py $1)
     git clone $repo
 }
 
@@ -247,3 +247,17 @@ lambda-update() {
 
 
 
+# ACM
+acmlist() {
+    aws acm list-certificates
+}
+
+acmcert() {
+    certarn=$(acm-getarn.py $1)
+    aws acm describe-certificate --certificate-arn $certarn
+}
+
+acmdelete() {
+    certarn=$(acm-getarn.py $1)
+    aws acm delete-certificate --certificate-arn $certarn
+}
