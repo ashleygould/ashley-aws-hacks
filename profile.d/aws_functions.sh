@@ -248,16 +248,31 @@ lambda-update() {
 
 
 # ACM
-acmlist() {
-    aws acm list-certificates
+acm-list() {
+    region=$1
+    if [ -n "$region" ]; then
+	aws acm list-certificates --region $region
+    else:
+	aws acm list-certificates
+    fi
 }
 
-acmcert() {
+acm-cert() {
     certarn=$(acm-getarn.py $1)
-    aws acm describe-certificate --certificate-arn $certarn
+    region=$2
+    if [ -n "$region" ]; then
+        aws acm describe-certificate --certificate-arn $certarn --region $region
+    else:
+        aws acm describe-certificate --certificate-arn $certarn
+    fi
 }
 
-acmdelete() {
+acm-delete() {
     certarn=$(acm-getarn.py $1)
-    aws acm delete-certificate --certificate-arn $certarn
+    region=$2
+    if [ -n "$region" ]; then
+        aws acm delete-certificate --certificate-arn $certarn --region $region
+    else:
+        aws acm delete-certificate --certificate-arn $certarn
+    fi
 }
