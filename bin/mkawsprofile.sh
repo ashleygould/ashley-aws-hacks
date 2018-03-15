@@ -7,7 +7,7 @@ USER=$1
 MODE=$2
 EMAIL=$3
 
-REPORT=$REPORTDIR/$USER
+REPORT=$REPORTDIR/${USER}.txt
 awsloginprofile $USER --${MODE} --role $ROLE 2>&1 | tee $REPORT
 
 if [ -n "$EMAIL" ]; then

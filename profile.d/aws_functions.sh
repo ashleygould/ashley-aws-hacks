@@ -97,20 +97,20 @@ cfn-template() {
 
 
 # codecommit
-cocolist() {
+coco-list() {
     aws codecommit list-repositories
 }
 
-cococreate() {
+coco-create() {
     aws codecommit create-repository --repository-name $1
 }
 
-cocodelete() {
+coco-delete() {
     aws codecommit delete-repository --repository-name $1
 }
 
-cococlone() {
-    repo=$(cocogeturl.py $1)
+coco-clone() {
+    repo=$(coco-geturl.py $1)
     git clone $repo
 }
 
