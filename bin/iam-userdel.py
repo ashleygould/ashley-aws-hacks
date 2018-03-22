@@ -13,8 +13,10 @@ iam = boto3.resource('iam')
 user = iam.User(user_name)
 try:
     user.load()
-except Exception as e:
-    sys.exit(e)
+except user.meta.client.exceptions.NoSuchEntityException:
+    print('no sush user')
+    sys.exit()
+
 for x in user.access_keys.all():
     print('deleting access key{}'.format(x.id))
     x.delete()
@@ -33,7 +35,6 @@ for x in user.policies.all():
 for x in user.signing_certificates.all():
     print('deleting signing cert {}'.format(x.id))
     x.delete()
-
 
 profile = user.LoginProfile()
 try:

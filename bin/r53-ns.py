@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-add delegation record set for new subdomain hostedzone to parent domain
-hostedzone
+add delegation record set for new subdomain hosted zone to parent domain
+hosted zone
 
 from subdomain account:
 get child hosted zone id from subdomainname
@@ -13,9 +13,9 @@ get parent hosted zone id from domainname
 run change record set to upsert child zone's NS record set
 
 Usage:
-    r53 (-hv)
-    r53 get-ns [-r REGION] DOMAINNAME -f RECORDSET
-    r53 set-ns [-r REGION] DOMAINNAME -f RECORDSET
+    r53-ns (-hv)
+    r53-ns get [-r REGION] DOMAINNAME -f RECORDSET
+    r53-ns set [-r REGION] DOMAINNAME -f RECORDSET
 
 Options:
     -h, --help           Print usage message.
@@ -44,7 +44,7 @@ def main():
     else:
         region = args['--region']
 
-    if args['get-ns']:
+    if args['get']:
         client = boto3.client('route53', region_name=region)
         hosted_zone_id = get_hosted_zone_id(args['DOMAINNAME'], region)
         #print(hosted_zone_id)
@@ -57,7 +57,7 @@ def main():
         with open(args['RECORDSET'], 'w') as fh:
             json.dump(ns_record_set, fh)
 
-    if args['set-ns']:
+    if args['set']:
         client = boto3.client('route53', region_name=region)
         hosted_zone_id = get_hosted_zone_id(args['DOMAINNAME'], region)
         #print(hosted_zone_id)
