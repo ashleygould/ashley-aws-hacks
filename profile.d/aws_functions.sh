@@ -252,27 +252,40 @@ acm-list() {
     region=$1
     if [ -n "$region" ]; then
 	aws acm list-certificates --region $region
-    else:
+    else
 	aws acm list-certificates
     fi
 }
 
 acm-cert() {
-    certarn=$(acm-getarn.py $1)
+    url=$1
     region=$2
     if [ -n "$region" ]; then
+	export AWS_DEFAULT_REGION=$region
+	certarn=$(acm-getarn.py $url)
         aws acm describe-certificate --certificate-arn $certarn --region $region
-    else:
+    else
+    	certarn=$(acm-getarn.py $url)
         aws acm describe-certificate --certificate-arn $certarn
     fi
 }
 
 acm-delete() {
-    certarn=$(acm-getarn.py $1)
+    url=$1
     region=$2
     if [ -n "$region" ]; then
+	export AWS_DEFAULT_REGION=$region
+	certarn=$(acm-getarn.py $url)
         aws acm delete-certificate --certificate-arn $certarn --region $region
-    else:
+    else
+    	certarn=$(acm-getarn.py $url)
         aws acm delete-certificate --certificate-arn $certarn
     fi
 }
+
+
+# Route53
+r53-list() {
+    aws route53 list-hosted-zones
+}
+
