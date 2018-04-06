@@ -94,6 +94,10 @@ cfn-template() {
     aws cloudformation get-template --stack-name $1
 }
 
+cfn-cancel() {
+    aws cloudformation cancel-update-stack --stack-name $1
+}
+
 
 
 # codecommit
