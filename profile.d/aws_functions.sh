@@ -293,3 +293,6 @@ r53-list() {
     aws route53 list-hosted-zones
 }
 
+r53-delete() {
+    aws route53 delete-hosted-zone --id $1
+}
