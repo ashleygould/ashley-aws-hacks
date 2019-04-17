@@ -296,3 +296,30 @@ r53-list() {
 r53-delete() {
     aws route53 delete-hosted-zone --id $1
 }
+
+
+# EC2 AMI
+ami-list() {
+    #aws ec2 describe-images --owners self --query 'Images[*].{Name:Name, Id:ImageId, Date:CreationDate}' 
+    #aws ec2 describe-images --owners self --output json | jq -r '.Images | sort_by(.CreationDate) | .[] | {"Name": .Name, "ImageId": .ImageId}'
+    aws ec2 describe-images --owners self --output json | jq -r '.Images | sort_by(.CreationDate) | .[] | .ImageId, .Name, ""'
+}
+
+ami-get-snapshot() {
+    aws ec2 describe-images --owners self --image-id $1 --output json | jq -r '.Images[].BlockDeviceMappings[] | select(.Ebs != null ) | .Ebs.SnapshotId'
+}
+
+
+ami-delete() {
+    snaps=$(ami-get-snapshot $1)
+    aws ec2 deregister-image --image-id $1
+    for id in $snaps; do
+	if [ -n $id ]; then
+	    aws ec2 delete-snapshot --snapshot-id $id
+        fi
+    done
+}
+
+
+
+
