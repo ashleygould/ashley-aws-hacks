@@ -298,6 +298,26 @@ r53-delete() {
 }
 
 
+# EC2 key-pairs
+ec2-key-import() {
+    PRIVATE_KEYNAME=$1
+    EC2_KEYNAME=$2
+    aws ec2 import-key-pair --key-name $EC2_KEYNAME --public-key-material file://~/.ssh/$PRIVATE_KEYNAME.pub
+}
+
+ec2-key-list() {
+    EC2_KEYNAME=$1
+    [ -z "$EC2_KEYNAME" ] && EC2_KEYNAME=""
+    aws ec2 describe-key-pairs --key-names $EC2_KEYNAME
+}
+
+
+ec2-key-delete() {
+    EC2_KEYNAME=$1
+    aws ec2 delete-key-pair --key-name $EC2_KEYNAME
+}
+
+
 # EC2 AMI
 ami-list() {
     #aws ec2 describe-images --owners self --query 'Images[*].{Name:Name, Id:ImageId, Date:CreationDate}' 
@@ -308,7 +328,6 @@ ami-list() {
 ami-get-snapshot() {
     aws ec2 describe-images --owners self --image-id $1 --output json | jq -r '.Images[].BlockDeviceMappings[] | select(.Ebs != null ) | .Ebs.SnapshotId'
 }
-
 
 ami-delete() {
     snaps=$(ami-get-snapshot $1)
@@ -321,5 +340,65 @@ ami-delete() {
 }
 
 
+# EC2 Instances
+#
+ec2-instance-byname() {
+    NAME=$1
+    aws ec2 describe-instances --filters "Name=tag:Name,Values=$NAME" | \
+	jq -r '.Reservations[].Instances[] | .InstanceId, .PrivateIpAddress, .PublicIpAddress, ""'
+}
+
+ec2-instance-bykey() {
+    KEY=$1
+    aws ec2 describe-instances --filters "Name=key-name,Values=$KEY" | \
+	jq -r '.Reservations[].Instances[] | .InstanceId, .PrivateIpAddress, .PublicIpAddress, .Tags, ""'
+}
+
+ec2-instance-byid() {
+    ID=$1
+    aws ec2 describe-instances --instance-ids $ID | \
+	jq -r '.Reservations[].Instances[] | .PrivateIpAddress, .PublicIpAddress, .Tags, .State, ""'
+}
+
+ec2-instance-tags() {
+    aws ec2 describe-instances | \
+	jq -r '.Reservations[].Instances[] | .InstanceId, .PrivateIpAddress, .PublicIpAddress, .Tags, .State, ""'
+}
+
+ec2-instance-terminate() {
+    ID=$1
+    aws ec2 terminate-instances --instance-ids $ID
+}
 
 
+
+
+# SSM
+
+ssm-param-history() {
+    aws ssm get-parameter-history --name $1
+}
+
+
+# aws ssm get-parameter --name /ucop-ami-builder/amazonlinux2 | jq -r '.Parameter.Version'
+#  1021  aws ssm put-parameter --name /ucop-ami-builder/amazonlinux2/latest --value ami-053111654d3b48b13 --type String
+#  1029  aws ssm put-parameter --name /ucop-ami-builder/amazonlinux2/latest --value ami-053111654d3b48b13 --type String --overwrite
+#  1030  aws ssm get-parameter --name /ucop-ami-builder/amazonlinux2/latest
+#  1031  aws ssm get-parameter-history --name /ucop-ami-builder/amazonlinux2/latest
+#  1032  aws ssm delete-parameter  --name /ucop-ami-builder/amazonlinux2/latest
+#  1034  aws ssm put-parameter --name /ucop-ami-builder/amazonlinux2 --value ami-053111654d3b48b13 --type String --overwrite
+#  1035  aws ssm get-parameter --name /ucop-ami-builder/amazonlinux2
+#  1037  aws ssm get-parameter --name /ucop-ami-builder/amazonlinux2 | jq -r '.Parameter.Version'
+#  1039  aws ssm get-parameter-history --name /ucop-ami-builder/amazonlinux2
+#  1040  aws ssm get-parameter-history --name /ucop-ami-builder/amazonlinux2 | jq -r '.Parameters[].Version'
+#  1041  aws ssm get-parameter-history --name /ucop-ami-builder/amazonlinux2 | jq -r '.Parameters[]'
+#  1048  aws ssm delete-parameter --name /ucop-ami-builder/amazonlinux2
+#  1049  aws ssm describe-parameters 
+#  1050  aws ssm put-parameter --name /ucop-ami-builder/amazonlinux2 --value ami-053111654d3b48b13 --type String --overwrite --description amzn2-ami-hvm-ucop-1555438467-x86_64-gp2
+#  1055  aws ssm delete-parameter --name /ucop-ami-builder/amazonlinux2
+#  1056  aws ssm put-parameter --name /ucop-ami-builder/amazonlinux2 --value ami-053111654d3b48b13 --type String --description amzn2-ami-hvm-ucop-1555438467-x86_64-gp2 --tags Key=Name,Value=amzn2-ami-hvm-ucop-1555438467-x86_64-gp2
+#  1070  aws ssm put-parameter --name /ucop-ami-builder/amazonlinux2 --value ami-053111654d3b48b13 --type String --description amzn2-ami-hvm-ucop-1555438467-x86_64-gp2 --overwrite
+#  1073  aws ssm label-parameter-version --name /ucop-ami-builder/amazonlinux2 --labels latest
+
+
+# ec2
