@@ -349,7 +349,7 @@ ec2-instance-list() {
 }
 
 ec2-instance-list-notags() {
-    aws ec2 describe-instances | jq -r '.Reservations[].Instances[] | select(.Tags == null) | .InstanceId, .KeyName, ""'
+    aws ec2 describe-instances | jq -r '.Reservations[].Instances[] | select(.Tags == null) | .InstanceId, .KeyName, .State.Name, ""'
 }
 
 ec2-instance-list-byname() {
