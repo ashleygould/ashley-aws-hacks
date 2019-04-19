@@ -342,34 +342,68 @@ ami-delete() {
 
 # EC2 Instances
 #
-ec2-instance-byname() {
+
+ec2-instance-list() {
+    aws ec2 describe-instances | \
+	jq -r '.Reservations[].Instances[] | (select(.Tags != null) | .Tags[] | select(.Key == "Name") | .Value), .InstanceId, .PrivateIpAddress, .PublicIpAddress, .State.Name, ""'
+}
+
+ec2-instance-list-notags() {
+    aws ec2 describe-instances | jq -r '.Reservations[].Instances[] | select(.Tags == null) | .InstanceId, .KeyName, ""'
+}
+
+ec2-instance-list-byname() {
     NAME=$1
     aws ec2 describe-instances --filters "Name=tag:Name,Values=$NAME" | \
-	jq -r '.Reservations[].Instances[] | .InstanceId, .PrivateIpAddress, .PublicIpAddress, ""'
+	jq -r '.Reservations[].Instances[] | .InstanceId, .PrivateIpAddress, .PublicIpAddress, .KeyName, .State.Name, ""'
 }
 
-ec2-instance-bykey() {
+ec2-instance-list-ipbyname() {
+    NAME=$1
+    aws ec2 describe-instances --filters "Name=tag:Name,Values=$NAME" | \
+	jq -r '.Reservations[].Instances[].PublicIpAddress'
+}
+
+ec2-instance-list-bykey() {
     KEY=$1
     aws ec2 describe-instances --filters "Name=key-name,Values=$KEY" | \
-	jq -r '.Reservations[].Instances[] | .InstanceId, .PrivateIpAddress, .PublicIpAddress, .Tags, ""'
+	jq -r '.Reservations[].Instances[] | .InstanceId, .PrivateIpAddress, .PublicIpAddress, .State.Name, .Tags, ""'
 }
 
-ec2-instance-byid() {
+ec2-instance-list-byid() {
     ID=$1
     aws ec2 describe-instances --instance-ids $ID | \
-	jq -r '.Reservations[].Instances[] | .PrivateIpAddress, .PublicIpAddress, .Tags, .State, ""'
+	jq -r '.Reservations[].Instances[] | .PrivateIpAddress, .PublicIpAddress, .State.Name, .KeyName, .Tags, ""'
 }
 
-ec2-instance-tags() {
+ec2-instance-list-running() {
     aws ec2 describe-instances | \
-	jq -r '.Reservations[].Instances[] | .InstanceId, .PrivateIpAddress, .PublicIpAddress, .Tags, .State, ""'
+        jq -r '.Reservations[].Instances[] | select(.State.Name == "running") | .InstanceId'
+}
+
+ec2-instance-list-stopped() {
+    aws ec2 describe-instances | \
+        jq -r '.Reservations[].Instances[] | select(.State.Name == "stopped") | .InstanceId'
+}
+
+
+ec2-instance-setname() {
+    ID=$1
+    NAME=$2
+    aws ec2 create-tags --resources $ID --tags Key=Name,Value=$NAME
+}
+
+ec2-instance-ssh() {
+    NAME=$1
+    KEY=$2
+    IP=$(ec2-instance-ipbyname $NAME)
+    ssh -i ~/.ssh/$KEY ec2-user@$IP
 }
 
 ec2-instance-terminate() {
     ID=$1
     aws ec2 terminate-instances --instance-ids $ID
 }
-
 
 
 
