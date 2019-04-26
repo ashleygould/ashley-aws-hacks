@@ -78,20 +78,20 @@ cfn-delete() {
 }
 
 cfn-events() {
-    aws cloudformation describe-stack-events --stack-name $1 | less
+    aws cloudformation describe-stack-events --stack-name $1 | jq -r '.StackEvents[] | .LogicalResourceId, .PhysicalResourceId, .ResourceType, .Timestamp, .ResourceStatus, .ResourceStatusReason, .ResourceProperties, ""'
 }
 
 cfn-list() {
-    aws cloudformation describe-stacks | grep StackName
+    aws cloudformation describe-stacks | jq -r '.Stacks[].StackName'
 }
 
 cfn-stack() {
-    aws cloudformation describe-stacks --stack-name $1
-    aws cloudformation describe-stack-resources --stack-name $1
+    aws cloudformation describe-stacks --stack-name $1 | jq -r '.Stacks[]'
+    aws cloudformation describe-stack-resources --stack-name $1 | jq -r '.StackResources[] | .LogicalResourceId, .ResourceType, .ResourceStatus, ""'
 }
 
 cfn-template() {
-    aws cloudformation get-template --stack-name $1
+    aws cloudformation get-template --stack-name $1 --output json| jq -r  '.TemplateBody'
 }
 
 cfn-cancel() {
