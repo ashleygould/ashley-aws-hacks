@@ -435,4 +435,20 @@ ssm-param-history() {
 #  1073  aws ssm label-parameter-version --name /ucop-ami-builder/amazonlinux2 --labels latest
 
 
-# ec2
+# Lambda
+
+lambda-list() {
+    aws lambda list-functions | jq -r .Functions[].FunctionName
+}
+
+lambda-policy() {
+    aws lambda get-policy --function-name $1 --output text | jq -r . 2>/dev/null
+}
+
+lambda-function() {
+    aws lambda get-function-configuration --function-name $1
+}
+
+lambda-function-full() {
+    aws lambda get-function --function-name $1
+}
