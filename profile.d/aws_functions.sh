@@ -452,3 +452,34 @@ lambda-function() {
 lambda-function-full() {
     aws lambda get-function --function-name $1
 }
+
+
+# Config
+
+config-list() {
+    aws configservice describe-config-rules | jq -r .ConfigRules[].ConfigRuleName
+}
+
+config-rule() {
+    aws configservice describe-config-rules --config-rule-names $1 | jq -r .ConfigRules[]
+}
+
+config-dc() {
+    aws configservice describe-delivery-channels
+    aws configservice describe-delivery-channel-status
+}
+
+config-rec() {
+    aws configservice describe-configuration-recorders
+}
+
+config-noncompliant() {
+    aws configservice describe-compliance-by-config-rule | jq -r '.ComplianceByConfigRules[] | select(.Compliance.ComplianceType == "NON_COMPLIANT") | .ConfigRuleName'
+}
+
+config-compliant() {
+    aws configservice describe-compliance-by-config-rule | jq -r '.ComplianceByConfigRules[] | select(.Compliance.ComplianceType == "NON_COMPLIANT") | .ConfigRuleName'
+}
+
+
+
