@@ -464,6 +464,14 @@ config-rule() {
     aws configservice describe-config-rules --config-rule-names $1 | jq -r .ConfigRules[]
 }
 
+config-tags() {
+    aws configservice list-tags-for-resource --resource-arn $1
+}
+
+config-delete() {
+    aws configservice delete-config-rule --config-rule-name $1
+}
+
 config-dc() {
     aws configservice describe-delivery-channels
     aws configservice describe-delivery-channel-status
