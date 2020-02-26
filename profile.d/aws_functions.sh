@@ -170,7 +170,10 @@ s3syncfrom() {
     aws s3 sync s3://${bucket}/ $target/
 }
 
-
+s3encryptbucket() {
+    bucket=$1
+    aws s3api put-bucket-encryption --bucket $bucket --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}'
+}
 
 
 # ecr
@@ -383,7 +386,7 @@ ec2-instance-list-running() {
 
 ec2-instance-list-stopped() {
     aws ec2 describe-instances | \
-        jq -r '.Reservations[].Instances[] | select(.State.Name == "stopped") | .InstanceId'
+        jq -r '.Reservations[].Instances[] | select(.State.Name == "stopped") | .InstanceId, .StateTransitionReason, .Tags'
 }
 
 
@@ -404,6 +407,39 @@ ec2-instance-terminate() {
     ID=$1
     aws ec2 terminate-instances --instance-ids $ID
 }
+
+
+# ec2 SecurityGoups
+
+ec2-vpc-list() {
+  #aws ec2 describe-vpcs | jq -r '.Vpcs[] | .VpcId, .CidrBlock, .Tags, ""'
+  aws ec2 describe-vpcs | jq -r '.Vpcs[] | .VpcId, .CidrBlock, ""'
+}
+
+
+ec2-sg-list-by-vpc() {
+  vpc_id=$1
+  aws ec2 describe-security-groups | jq -r ".SecurityGroups[] | select(.VpcId == \"$vpc_id\") | .GroupName, .Description, .GroupId, .VpcId, \"\""
+}
+
+ec2-sg-list() {
+aws ec2 describe-security-groups | jq -r '.SecurityGroups[] | .GroupName, .Description, .GroupId, .VpcId, ""'
+}
+
+ec2-sg-delete() {
+  sg_id=$1
+  aws ec2 delete-security-group --group-id $sg_id
+}
+
+ec2-sg-delete-by-vpc() {
+  vpc_id=$1
+  sg_list=$(aws ec2 describe-security-groups | jq -r ".SecurityGroups[] | select(.VpcId == \"$vpc_id\") | .GroupId")
+  echo $sg_list
+  for sg_id in $sg_list; do
+    aws ec2 delete-security-group --group-id $sg_id
+  done
+}
+
 
 
 
@@ -465,11 +501,35 @@ config-rule() {
 }
 
 config-tags() {
-    aws configservice list-tags-for-resource --resource-arn $1
+    arn=$(aws configservice describe-config-rules --config-rule-names $1 | jq -r .ConfigRules[].ConfigRuleArn)
+    echo $arn
+    aws configservice list-tags-for-resource --resource-arn $arn
 }
 
 config-delete() {
     aws configservice delete-config-rule --config-rule-name $1
+}
+
+config-run() {
+    aws configservice start-config-rules-evaluation --config-rule-names $1
+}	
+
+config-result() {
+    aws configservice describe-compliance-by-config-rule --config-rule-names $1 | jq -r '.ComplianceByConfigRules[] | .ConfigRuleName, .Compliance.ComplianceType'
+}
+
+config-noncompliant() {
+    aws configservice describe-compliance-by-config-rule | jq -r '.ComplianceByConfigRules[] | select(.Compliance.ComplianceType == "NON_COMPLIANT") | .ConfigRuleName'
+}
+
+config-compliant() {
+    aws configservice describe-compliance-by-config-rule | jq -r '.ComplianceByConfigRules[] | select(.Compliance.ComplianceType == "COMPLIANT") | .ConfigRuleName'
+}
+
+# config infra
+
+config-status() {
+    aws configservice get-status
 }
 
 config-dc() {
@@ -480,14 +540,5 @@ config-dc() {
 config-rec() {
     aws configservice describe-configuration-recorders
 }
-
-config-noncompliant() {
-    aws configservice describe-compliance-by-config-rule | jq -r '.ComplianceByConfigRules[] | select(.Compliance.ComplianceType == "NON_COMPLIANT") | .ConfigRuleName'
-}
-
-config-compliant() {
-    aws configservice describe-compliance-by-config-rule | jq -r '.ComplianceByConfigRules[] | select(.Compliance.ComplianceType == "NON_COMPLIANT") | .ConfigRuleName'
-}
-
 
 

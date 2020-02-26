@@ -4,6 +4,7 @@ import sys
 import boto3
 import yaml
 import json
+from botocore.exceptions import ClientError
 
 
 def yprint(obj):
@@ -30,6 +31,7 @@ if len(sys.argv) <= 1:
 
 bucket_name = sys.argv[1]
 s3 = boto3.resource('s3')
+s3client = boto3.client('s3')
 bucket = s3.Bucket(bucket_name)
 bucket.load()
 if not bucket.creation_date:
@@ -44,6 +46,18 @@ if bucket.Versioning().status:
     print('Versioned object count: {}'.format(
         sum(1 for _ in bucket.object_versions.all())
     ))
+
+
+# get encryption status
+print()
+try:
+  response = s3client.get_bucket_encryption(
+      Bucket=bucket_name
+  )
+  response.pop('ResponseMetadata')
+  yprint(response)
+except ClientError as e:  # pragma: no cover
+  print('ServerSideEncryptionConfiguration: none')
 
 subresource_printer(bucket, 'Acl', ['owner', 'grants'])
 subresource_printer(bucket, 'Cors', ['cors_rules'])
