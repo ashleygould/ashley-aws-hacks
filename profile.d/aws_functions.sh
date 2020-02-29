@@ -416,6 +416,20 @@ ec2-vpc-list() {
   aws ec2 describe-vpcs | jq -r '.Vpcs[] | .VpcId, .CidrBlock, ""'
 }
 
+ec2-vpc-list-tags() {
+  aws ec2 describe-vpcs | jq -r '.Vpcs[] | .VpcId, .CidrBlock, .Tags, ""'
+}
+
+
+ec2-subnet-list() {
+  vpc_id=$1
+  aws ec2 describe-subnets | jq -r ".Subnets[] | .SubnetId, .CidrBlock, .AvailabilityZone, .VpcId, \"\""
+}
+
+ec2-subnet-list-by-vpc() {
+  vpc_id=$1
+  aws ec2 describe-subnets | jq -r ".Subnets[] | select(.VpcId == \"$vpc_id\") | .SubnetId, .CidrBlock, .AvailabilityZone, .VpcId, \"\""
+}
 
 ec2-sg-list-by-vpc() {
   vpc_id=$1
@@ -441,6 +455,10 @@ ec2-sg-delete-by-vpc() {
 }
 
 
+
+ec2-eni-list() {
+aws ec2 describe-network-interfaces | jq -r '.NetworkInterfaces[] | .InterfaceType, .Description, .NetworkInterfaceId, .VpcId, .SubnetId, .PrivateIpAddress, ""'
+}
 
 
 # SSM
