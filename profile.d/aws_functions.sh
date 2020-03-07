@@ -98,6 +98,17 @@ cfn-cancel() {
     aws cloudformation cancel-update-stack --stack-name $1
 }
 
+cfn-resources() {
+    aws cloudformation describe-stack-resources --stack-name $1
+}
+
+cfn-drift() {
+    aws cloudformation detect-stack-drift --stack-name $1
+    sleep 10
+    aws cloudformation describe-stack-resource-drifts --stack-name $1
+}
+
+
 
 
 # codecommit
@@ -542,6 +553,10 @@ config-noncompliant() {
 
 config-compliant() {
     aws configservice describe-compliance-by-config-rule | jq -r '.ComplianceByConfigRules[] | select(.Compliance.ComplianceType == "COMPLIANT") | .ConfigRuleName'
+}
+
+config-details() {
+    aws configservice get-compliance-details-by-config-rule --config-rule-name $1
 }
 
 # config infra
