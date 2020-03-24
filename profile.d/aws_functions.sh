@@ -244,26 +244,6 @@ ecr-login() {
 
 
 
-# Lambda
-lambda-list() {
-    aws lambda list-functions | grep FunctionName
-}
-
-
-lambda-func() {
-    aws lambda get-function --function-name $1
-}
-
-
-lambda-update() {
-    bucket=$1
-    key=$2
-    name=$3
-    aws lambda update-function-code --s3-bucket $bucket --s3-key $key --function-name $name
-}
-
-
-
 
 # ACM
 acm-list() {
@@ -471,6 +451,12 @@ ec2-eni-list() {
 aws ec2 describe-network-interfaces | jq -r '.NetworkInterfaces[] | .InterfaceType, .Description, .NetworkInterfaceId, .VpcId, .SubnetId, .PrivateIpAddress, ""'
 }
 
+ec2-eni-list-by-sg() {
+aws ec2 describe-network-interfaces --filters Name=group-id,Values=$1 | jq -r '.NetworkInterfaces[] | .NetworkInterfaceId'
+#aws ec2 describe-network-interfaces --filters Name=group-id,Values=$1
+}
+
+
 
 # SSM
 
@@ -517,6 +503,20 @@ lambda-function() {
 lambda-function-full() {
     aws lambda get-function --function-name $1
 }
+
+lambda-update() {
+    bucket=$1
+    key=$2
+    name=$3
+    aws lambda update-function-code --s3-bucket $bucket --s3-key $key --function-name $name
+}
+
+
+lambda-delete() {
+    aws lambda delete-function --function-name $1
+}
+
+
 
 
 # Config
