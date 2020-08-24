@@ -464,6 +464,11 @@ ssm-param-history() {
     aws ssm get-parameter-history --name $1
 }
 
+ssm-param-by-path() {
+PATH=$1
+    aws ssm get-parameters-by-path --path $PATH --recursive --region us-west-2 | jq -r '.Parameters' | jq -r '.[] | "\(.Name)\t\(.Value)"'
+}
+
 
 # aws ssm get-parameter --name /ucop-ami-builder/amazonlinux2 | jq -r '.Parameter.Version'
 #  1021  aws ssm put-parameter --name /ucop-ami-builder/amazonlinux2/latest --value ami-053111654d3b48b13 --type String
