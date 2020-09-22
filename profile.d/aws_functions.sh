@@ -337,11 +337,10 @@ ami-delete() {
 # EC2 Instances
 #
 
-ec2-instance-name-byid() {
+ec2-instance-name() {
     ID=$1
     aws ec2 describe-instances --instance-ids $ID | \
 	jq -r '.Reservations[].Instances[].Tags[] | select(.Key == "Name") | .Value'
-    #aws ec2 describe-tags --filters "Name=resource-id,Values=$1" | jq -r '.Tags'
 }
 
 ec2-instance-list() {
@@ -649,7 +648,7 @@ elb-tg-hosts() {
     HEALTH=$(elb-tg-health $NAME)
     IDS=$(echo $HEALTH | jq -r '.TargetHealthDescriptions[].Target.Id')
     for id in $IDS; do
-        hostname=$(ec2-instance-name-byid $id)
+        hostname=$(ec2-instance-name $id)
         status=$(echo $HEALTH | jq -r ".TargetHealthDescriptions[] | select(.Target.Id == \"$id\") | .TargetHealth.State")
         echo -e "$hostname\t$id\t$status"
     done
