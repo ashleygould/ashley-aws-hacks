@@ -587,57 +587,66 @@ config-rec() {
 }
 
 
-# ALB
+# ELBv2
 
-alb-list() {
+elb-lb-list() {
     response=$(aws elbv2 describe-load-balancers)
     loadbalancers=$(echo $response | jq -r '.LoadBalancers[]')
     nextmarker=$(echo $response | jq -r '.NextMarker')
     while [ ! -n $nextmarker ]; do
         response=$(aws elbv2 describe-load-balancers --staring-token $nextmarker)
-        loadbalancers=$(echo $response | jq -r '.LoadBalancers[]')
+        loadbalancers=${loadbalancers}$(echo $response | jq -r '.LoadBalancers[]')
         nextmarker=$(echo $response | jq -r '.NextMarker')
     done
     echo $loadbalancers | jq -r '.LoadBalancerName' | sort
 }
 
-alb-by-name() {
+elb-lb-show() {
     aws elbv2 describe-load-balancers --names $1
 }
 
-alb-arn-by-name() {
+elb-lb-show-arn() {
     aws elbv2 describe-load-balancers --names $1 | jq -r '.LoadBalancers[].LoadBalancerArn'
 }
 
-alb-list-tg() {
+elb-tg-list() {
     NAME=$1
     if [ -n "$NAME" ]; then
-        ARN=$(alb-arn-by-name $NAME)
+        ARN=$(elb-lb-show-arn $NAME)
         aws elbv2 describe-target-groups --load-balancer-arn $arn | jq -r '.TargetGroups[].TargetGroupName'
     else
-        aws elbv2 describe-target-groups | jq -r '.TargetGroups[].TargetGroupName'
-    fi
+        #aws elbv2 describe-target-groups | jq -r '.TargetGroups[].TargetGroupName'
+        response=$(aws elbv2 describe-target-groups)
+        targetgroups=$(echo $response | jq -r '.TargetGroups[]')
+        nextmarker=$(echo $response | jq -r '.NextMarker')
+        while [ ! -n $nextmarker ]; do
+            response=$(aws elbv2 describe-target-groups --staring-token $nextmarker)
+            targetgroups=${targetgroups}$(echo $response | jq -r '.TargetGroups[]')
+            nextmarker=$(echo $response | jq -r '.NextMarker')
+        done
+        echo $targetgroups | jq -r '.TargetGroupName' | sort
+        fi
 }
        
-alb-tg-by-name() {
+elb-tg-show() {
     NAME=$1
     aws elbv2 describe-target-groups | jq -r ".TargetGroups[] | select(.TargetGroupName == \"$NAME\")"
 }
 
-alb-tg-arn-by-name() {
+elb-tg-show-arn() {
     NAME=$1
-    alb-tg-by-name $NAME | jq -r '.TargetGroupArn'
+    elb-tg-show $NAME | jq -r '.TargetGroupArn'
 }
 
-alb-tg-health() {
+elb-tg-health() {
     NAME=$1
-    ARN=$(alb-tg-arn-by-name $NAME)
+    ARN=$(elb-tg-show-arn $NAME)
     aws elbv2 describe-target-health --target-group-arn $ARN
 }
 
-alb-hosts-in-tg() {
+elb-tg-hosts() {
     NAME=$1
-    HEALTH=$(alb-tg-health $NAME)
+    HEALTH=$(elb-tg-health $NAME)
     IDS=$(echo $HEALTH | jq -r '.TargetHealthDescriptions[].Target.Id')
     for id in $IDS; do
         hostname=$(ec2-instance-name-byid $id)
