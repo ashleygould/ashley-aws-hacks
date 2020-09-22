@@ -337,6 +337,13 @@ ami-delete() {
 # EC2 Instances
 #
 
+ec2-instance-name-byid() {
+    ID=$1
+    aws ec2 describe-instances --instance-ids $ID | \
+	jq -r '.Reservations[].Instances[].Tags[] | select(.Key == "Name") | .Value'
+    #aws ec2 describe-tags --filters "Name=resource-id,Values=$1" | jq -r '.Tags'
+}
+
 ec2-instance-list() {
     aws ec2 describe-instances | \
 	jq -r '.Reservations[].Instances[] | (select(.Tags != null) | .Tags[] | select(.Key == "Name") | .Value), .InstanceId, .PrivateIpAddress, .PublicIpAddress, .State.Name, ""'
@@ -578,5 +585,66 @@ config-dc() {
 config-rec() {
     aws configservice describe-configuration-recorders
 }
+
+
+# ALB
+
+alb-list() {
+    response=$(aws elbv2 describe-load-balancers)
+    loadbalancers=$(echo $response | jq -r '.LoadBalancers[]')
+    nextmarker=$(echo $response | jq -r '.NextMarker')
+    while [ ! -n $nextmarker ]; do
+        response=$(aws elbv2 describe-load-balancers --staring-token $nextmarker)
+        loadbalancers=$(echo $response | jq -r '.LoadBalancers[]')
+        nextmarker=$(echo $response | jq -r '.NextMarker')
+    done
+    echo $loadbalancers | jq -r '.LoadBalancerName' | sort
+}
+
+alb-by-name() {
+    aws elbv2 describe-load-balancers --names $1
+}
+
+alb-arn-by-name() {
+    aws elbv2 describe-load-balancers --names $1 | jq -r '.LoadBalancers[].LoadBalancerArn'
+}
+
+alb-list-tg() {
+    NAME=$1
+    if [ -n "$NAME" ]; then
+        ARN=$(alb-arn-by-name $NAME)
+        aws elbv2 describe-target-groups --load-balancer-arn $arn | jq -r '.TargetGroups[].TargetGroupName'
+    else
+        aws elbv2 describe-target-groups | jq -r '.TargetGroups[].TargetGroupName'
+    fi
+}
+       
+alb-tg-by-name() {
+    NAME=$1
+    aws elbv2 describe-target-groups | jq -r ".TargetGroups[] | select(.TargetGroupName == \"$NAME\")"
+}
+
+alb-tg-arn-by-name() {
+    NAME=$1
+    alb-tg-by-name $NAME | jq -r '.TargetGroupArn'
+}
+
+alb-tg-health() {
+    NAME=$1
+    ARN=$(alb-tg-arn-by-name $NAME)
+    aws elbv2 describe-target-health --target-group-arn $ARN
+}
+
+alb-hosts-in-tg() {
+    NAME=$1
+    HEALTH=$(alb-tg-health $NAME)
+    IDS=$(echo $HEALTH | jq -r '.TargetHealthDescriptions[].Target.Id')
+    for id in $IDS; do
+        hostname=$(ec2-instance-name-byid $id)
+        status=$(echo $HEALTH | jq -r ".TargetHealthDescriptions[] | select(.Target.Id == \"$id\") | .TargetHealth.State")
+        echo -e "$hostname\t$id\t$status"
+    done
+}        
+
 
 
