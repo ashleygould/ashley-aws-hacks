@@ -358,6 +358,12 @@ ec2-instance-list-byname() {
 	jq -r '.Reservations[].Instances[] | .InstanceId, .PrivateIpAddress, .PublicIpAddress, .KeyName, .State.Name, ""'
 }
 
+ec2-instance-list-id-byname() {
+    NAME=$1
+    aws ec2 describe-instances --filters "Name=tag:Name,Values=$NAME" | \
+	jq -r '.Reservations[].Instances[].InstanceId'
+}
+
 ec2-instance-list-ipbyname() {
     NAME=$1
     aws ec2 describe-instances --filters "Name=tag:Name,Values=$NAME" | \
@@ -471,8 +477,8 @@ ssm-param-history() {
 }
 
 ssm-param-by-path() {
-PATH=$1
-    aws ssm get-parameters-by-path --path $PATH --recursive --region us-west-2 | jq -r '.Parameters' | jq -r '.[] | "\(.Name)\t\(.Value)"'
+PARAMPATH=$1
+    aws ssm get-parameters-by-path --path $PARAMPATH --recursive --region us-west-2 | jq -r '.Parameters' | jq -r '.[] | "\(.Name)\t\(.Value)"'
 }
 
 
