@@ -481,6 +481,17 @@ PARAMPATH=$1
     aws ssm get-parameters-by-path --path $PARAMPATH --recursive --region us-west-2 | jq -r '.Parameters' | jq -r '.[] | "\(.Name)\t\(.Value)"'
 }
 
+ssm-param-get() {
+    aws ssm get-parameter --name $1 | jq -r '.Parameter.Value'
+}
+
+ssm-param-get-verbose() {
+    aws ssm get-parameter --name $1
+}
+
+ssm-param-put() {
+    aws ssm put-parameter --name $1 --value $2 --type String
+}
 
 # aws ssm get-parameter --name /ucop-ami-builder/amazonlinux2 | jq -r '.Parameter.Version'
 #  1021  aws ssm put-parameter --name /ucop-ami-builder/amazonlinux2/latest --value ami-053111654d3b48b13 --type String
