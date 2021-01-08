@@ -472,7 +472,7 @@ aws ec2 describe-network-interfaces --filters Name=group-id,Values=$1 | jq -r '.
 
 # SSM
 
-ssm-param-history() {
+PARAMPATHssm-param-history() {
     aws ssm get-parameter-history --name $1
 }
 
@@ -491,6 +491,10 @@ ssm-param-get-verbose() {
 
 ssm-param-put() {
     aws ssm put-parameter --name $1 --value $2 --type String
+}
+
+ssm-param-delete() {
+    aws ssm delete-parameter --name $1
 }
 
 # aws ssm get-parameter --name /ucop-ami-builder/amazonlinux2 | jq -r '.Parameter.Version'
