@@ -472,7 +472,7 @@ aws ec2 describe-network-interfaces --filters Name=group-id,Values=$1 | jq -r '.
 
 # SSM
 
-PARAMPATHssm-param-history() {
+ssm-param-history() {
     aws ssm get-parameter-history --name $1
 }
 
